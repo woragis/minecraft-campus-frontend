@@ -1,28 +1,44 @@
 # CampusWorld — Frontend
 
-Interface web do **CampusWorld**.
+Interface web do **CampusWorld** — landing com presença ao vivo.
 
-## Responsabilidades
+## Stack
 
-- Landing — jogadores e servidores online
-- Perfis de jogadores (reputação, convites, histórico)
-- Guildas e cidades
-- Dashboard de estatísticas
-- Mapa (BlueMap embed / overlay)
-- Painel administrativo
-
-## Stack (planejado)
-
-- Next.js 15
+- Next.js 15 (App Router)
 - TypeScript
-- Tailwind CSS
+- CSS simples (sem Tailwind por enquanto)
 
 ## Desenvolvimento
 
 ```bash
-# Em breve: npm install && npm run dev
+cd frontend
+cp .env.example .env.local
+npm install
+npm run dev
+```
+
+Abra [http://localhost:3000](http://localhost:3000).
+
+## API
+
+O frontend consome rotas públicas do backend:
+
+| Rota | Uso |
+|------|-----|
+| `GET /v1/presence/overview` | Total online + por servidor |
+| `GET /v1/guilds` | Lista de guildas |
+| `GET /v1/presence/guilds/{id}` | Membros online da guilda |
+
+Configure `API_URL` em `.env.local` (default `http://127.0.0.1:8080`).
+
+Para presença ao vivo, ative Redis no backend:
+
+```bash
+# backend/.env
+REDIS_ENABLED=1
 ```
 
 ## Documentação
 
-Especificação do projeto: [minecraft-campus/CAMPUSWORLD.md](https://github.com/woragis/minecraft-campus/blob/main/CAMPUSWORLD.md)
+- [MULTIPLATFORM-ROADMAP.md](../docs/MULTIPLATFORM-ROADMAP.md)
+- [PHASE-5-PRESENCE.md](../docs/PHASE-5-PRESENCE.md)
