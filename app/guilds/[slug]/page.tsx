@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { GuildPanel } from "@/app/components/GuildPanel";
 import {
   getGuildBySlug,
   getGuildMembers,
@@ -9,6 +10,8 @@ import {
   type GuildMember,
   type GuildPresence,
 } from "@/lib/api";
+import { fetchMe } from "@/lib/me";
+import { getSessionToken } from "@/lib/session";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -57,6 +60,19 @@ export default async function GuildPage({ params }: PageProps) {
   }
 
   const onlineIds = new Set(presence?.members.map((m) => m.playerId) ?? []);
+
+  const token = await getSessionToken();
+  let myGuildSlug: string | undefined;
+  if (token) {
+    try {
+      const me = await fetchMe(token);
+      myGuildSlug = me.guild?.slug;
+    } catch {
+      myGuildSlug = undefined;
+    }
+  }
+
+  const isMember = myGuildSlug === guild.slug;
 
   return (
     <main>
@@ -125,6 +141,8 @@ export default async function GuildPage({ params }: PageProps) {
           </ul>
         )}
       </section>
+
+      <GuildPanel slug={guild.slug} isMember={isMember} loggedIn={!!token} />
     </main>
   );
 }
