@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   getGuildPresence,
   getGuilds,
@@ -23,6 +24,8 @@ export default async function HomePage() {
   let overview = null;
   let guildsOnline: GuildPresence[] = [];
 
+  let allGuilds: Guild[] = [];
+
   try {
     overview = await getPresenceOverview();
   } catch (e) {
@@ -31,6 +34,7 @@ export default async function HomePage() {
 
   try {
     const { guilds } = await getGuilds();
+    allGuilds = guilds;
     guildsOnline = await loadGuildPresence(guilds);
   } catch (e) {
     guildsError = e instanceof Error ? e.message : "Falha ao carregar guildas";
@@ -87,7 +91,7 @@ export default async function HomePage() {
                 <ul className="players">
                   {srv.players.map((p) => (
                     <li key={p.playerId}>
-                      <span>{p.username}</span>
+                      <Link href={`/players/${p.playerId}`}>{p.username}</Link>
                       <span>{p.platform ?? "java"}</span>
                     </li>
                   ))}
@@ -113,13 +117,29 @@ export default async function HomePage() {
               <ul className="players">
                 {g.members.map((m) => (
                   <li key={m.playerId}>
-                    <span>{m.username}</span>
+                    <Link href={`/players/${m.playerId}`}>{m.username}</Link>
                     <span>{m.serverSlug}</span>
                   </li>
                 ))}
               </ul>
             </div>
           ))
+        )}
+      </section>
+
+      <section className="card" style={{ marginTop: "1rem" }}>
+        <h2>Guildas</h2>
+        {allGuilds.length === 0 ? (
+          <p className="empty">Nenhuma guilda cadastrada.</p>
+        ) : (
+          <ul className="players">
+            {allGuilds.map((g) => (
+              <li key={g.id}>
+                <Link href={`/guilds/${g.slug}`}>{g.name}</Link>
+                <span>{g.memberCount ?? 0} membros</span>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </main>

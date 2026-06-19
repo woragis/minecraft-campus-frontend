@@ -110,3 +110,47 @@ ul.players li {
 .error {
   color: #fca5a5;
 }
+
+.pill.status-active {
+  background: #134e4a;
+  color: var(--accent);
+}
+
+.pill.status-probation {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+}
+
+.pill.status-banned {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+.breadcrumb {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.meta {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.meta li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.meta li:last-child {
+  border-bottom: none;
+}
