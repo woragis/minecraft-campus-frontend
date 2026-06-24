@@ -51,8 +51,51 @@ export type PlayerProfile = {
   status: string;
   trustScore: number;
   sponsorScore: number;
+  affiliationType?: string;
+  universitySlug?: string;
+  facultySlug?: string;
+  courseSlug?: string;
   guild?: Guild;
 };
+
+export type University = {
+  slug: string;
+  name: string;
+  colorHex: string;
+};
+
+export type Faculty = {
+  slug: string;
+  universitySlug: string;
+  name: string;
+  shortAbbr: string;
+  colorHex: string;
+};
+
+export type Course = {
+  slug: string;
+  facultySlug: string;
+  name: string;
+  shortAbbr: string;
+  colorHex: string;
+};
+
+export type AffiliationType = "student" | "staff" | "guest" | "alumni";
+
+export function affiliationTypeLabel(type?: string): string {
+  switch (type) {
+    case "student":
+      return "Estudante";
+    case "staff":
+      return "Servidor";
+    case "guest":
+      return "Visitante";
+    case "alumni":
+      return "Egresso";
+    default:
+      return type ?? "—";
+  }
+}
 
 export type PlayerStats = {
   playerId: string;
@@ -99,6 +142,24 @@ export function getPlayer(id: string) {
 
 export function getPlayerStats(id: string) {
   return apiGet<PlayerStats>(`/v1/players/${id}/stats`);
+}
+
+export function getCatalogUniversities() {
+  return apiGet<{ universities: University[] }>("/v1/catalog/universities", 3600);
+}
+
+export function getCatalogFaculties(universitySlug: string) {
+  return apiGet<{ faculties: Faculty[] }>(
+    `/v1/catalog/faculties?universitySlug=${encodeURIComponent(universitySlug)}`,
+    3600,
+  );
+}
+
+export function getCatalogCourses(facultySlug: string) {
+  return apiGet<{ courses: Course[] }>(
+    `/v1/catalog/courses?facultySlug=${encodeURIComponent(facultySlug)}`,
+    3600,
+  );
 }
 
 export function formatPlayTime(seconds: number): string {

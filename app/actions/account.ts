@@ -6,9 +6,17 @@ import {
   mePost,
   redeemLinkCode,
   logoutSession,
+  patchAffiliation,
+  type AffiliationPatchBody,
   type CreatedGuild,
   type CreatedInvite,
 } from "@/lib/me";
+import {
+  getCatalogCourses,
+  getCatalogFaculties,
+  type Course,
+  type Faculty,
+} from "@/lib/api";
 import { getSessionToken, SESSION_COOKIE } from "@/lib/session";
 
 type ActionResult =
@@ -79,8 +87,12 @@ export async function sendInvite(_prev: ActionResult | null, formData: FormData)
   if (!targetUsername) {
     return { ok: false, error: "Informe o nick do convidado." };
   }
+  const inviteAsGuest = formData.get("inviteAsGuest") === "on";
   try {
-    const invite = await mePost<CreatedInvite>(tokenOrErr, "/v1/me/invites", { targetUsername });
+    const invite = await mePost<CreatedInvite>(tokenOrErr, "/v1/me/invites", {
+      targetUsername,
+      affiliationType: inviteAsGuest ? "guest" : "student",
+    });
     revalidatePath("/conta");
     return { ok: true, message: `Convite ${invite.code} criado para ${invite.targetUsername}.` };
   } catch (e) {
@@ -154,4 +166,58 @@ export async function leaveGuildFormAction(
   _formData: FormData,
 ): Promise<ActionResult> {
   return leaveGuildAction(slug);
+}
+
+export async function updateAffiliationAction(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const tokenOrErr = await requireToken();
+  if (typeof tokenOrErr !== "string") {
+    return tokenOrErr;
+  }
+
+  const affiliationType = String(formData.get("affiliationType") ?? "student").trim();
+  const body: AffiliationPatchBody = { affiliationType };
+
+  if (affiliationType !== "guest") {
+    const universitySlug = String(formData.get("universitySlug") ?? "").trim();
+    const facultySlug = String(formData.get("facultySlug") ?? "").trim();
+    const courseSlug = String(formData.get("courseSlug") ?? "").trim();
+
+    if (affiliationType === "student" || affiliationType === "alumni") {
+      if (!universitySlug || !facultySlug || !courseSlug) {
+        return { ok: false, error: "Selecione universidade, centro e curso." };
+      }
+    }
+
+    if (universitySlug) {
+      body.universitySlug = universitySlug;
+    }
+    if (facultySlug) {
+      body.facultySlug = facultySlug;
+    }
+    if (courseSlug) {
+      body.courseSlug = courseSlug;
+    }
+  }
+
+  try {
+    await patchAffiliation(tokenOrErr, body);
+    revalidatePath("/conta");
+    revalidatePath("/");
+    return { ok: true, message: "Afiliação atualizada." };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "Falha ao atualizar afiliação." };
+  }
+}
+
+export async function fetchFacultiesCatalogAction(universitySlug: string): Promise<Faculty[]> {
+  const { faculties } = await getCatalogFaculties(universitySlug);
+  return faculties;
+}
+
+export async function fetchCoursesCatalogAction(facultySlug: string): Promise<Course[]> {
+  const { courses } = await getCatalogCourses(facultySlug);
+  return courses;
 }

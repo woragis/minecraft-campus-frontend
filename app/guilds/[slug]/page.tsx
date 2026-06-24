@@ -17,14 +17,21 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-type MemberRow = GuildMember & { username?: string };
+type MemberRow = GuildMember & {
+  username?: string;
+  affiliationType?: string;
+};
 
 async function loadMemberNames(members: GuildMember[]): Promise<MemberRow[]> {
   const rows: MemberRow[] = [];
   for (const member of members) {
     try {
       const player = await getPlayer(member.playerId);
-      rows.push({ ...member, username: player.username });
+      rows.push({
+        ...member,
+        username: player.username,
+        affiliationType: player.affiliationType,
+      });
     } catch {
       rows.push(member);
     }
@@ -129,9 +136,14 @@ export default async function GuildPage({ params }: PageProps) {
           <ul className="players">
             {members.map((member) => (
               <li key={member.playerId}>
-                <Link href={`/players/${member.playerId}`}>
-                  {member.username ?? member.playerId.slice(0, 8)}
-                </Link>
+                <span className="member-name">
+                  <Link href={`/players/${member.playerId}`}>
+                    {member.username ?? member.playerId.slice(0, 8)}
+                  </Link>
+                  {member.affiliationType === "guest" && (
+                    <span className="pill pill-affiliation-guest">Visitante</span>
+                  )}
+                </span>
                 <span>
                   {member.role}
                   {onlineIds.has(member.playerId) ? " · online" : ""}

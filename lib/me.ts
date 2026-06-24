@@ -52,6 +52,29 @@ export async function mePost<T>(token: string, path: string, body?: unknown): Pr
   return JSON.parse(text) as T;
 }
 
+export type AffiliationPatchBody = {
+  affiliationType: string;
+  universitySlug?: string | null;
+  facultySlug?: string | null;
+  courseSlug?: string | null;
+};
+
+export async function patchAffiliation(token: string, body: AffiliationPatchBody): Promise<MeProfile> {
+  const res = await fetch(`${API_URL}/v1/me/affiliation`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+  return res.json() as Promise<MeProfile>;
+}
+
 export type CreatedGuild = Guild;
 
 export type CreatedInvite = {

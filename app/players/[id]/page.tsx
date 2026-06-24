@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  affiliationTypeLabel,
   formatPlayTime,
+  getCatalogCourses,
+  getCatalogFaculties,
+  getCatalogUniversities,
   getPlayer,
   getPlayerStats,
   type PlayerProfile,
@@ -31,6 +35,8 @@ export default async function PlayerPage({ params }: PageProps) {
     statsError = e instanceof Error ? e.message : "Falha ao carregar stats";
   }
 
+  const affiliationLabels = await resolveAffiliationLabels(profile);
+
   return (
     <main>
       <p className="breadcrumb">
@@ -39,6 +45,27 @@ export default async function PlayerPage({ params }: PageProps) {
 
       <h1>{profile.username}</h1>
       <p className="subtitle">Perfil do jogador</p>
+
+      <div className="affiliation-badges" style={{ marginBottom: "1rem" }}>
+        {profile.affiliationType === "guest" ? (
+          <span className="pill pill-affiliation-guest">Visitante</span>
+        ) : (
+          <>
+            {profile.affiliationType && (
+              <span className="pill">{affiliationTypeLabel(profile.affiliationType)}</span>
+            )}
+            {affiliationLabels.university && (
+              <span className="pill">{affiliationLabels.university}</span>
+            )}
+            {affiliationLabels.faculty && (
+              <span className="pill">{affiliationLabels.faculty}</span>
+            )}
+            {affiliationLabels.course && (
+              <span className="pill">{affiliationLabels.course}</span>
+            )}
+          </>
+        )}
+      </div>
 
       <div className="grid two">
         <section className="card">
@@ -115,4 +142,35 @@ export default async function PlayerPage({ params }: PageProps) {
       </section>
     </main>
   );
+}
+
+async function resolveAffiliationLabels(profile: PlayerProfile) {
+  if (profile.affiliationType === "guest") {
+    return { university: "", faculty: "", course: "" };
+  }
+
+  let university = profile.universitySlug ?? "";
+  let faculty = profile.facultySlug ?? "";
+  let course = profile.courseSlug ?? "";
+
+  try {
+    if (profile.universitySlug) {
+      const { universities } = await getCatalogUniversities();
+      university = universities.find((u) => u.slug === profile.universitySlug)?.name ?? university;
+    }
+    if (profile.universitySlug && profile.facultySlug) {
+      const { faculties } = await getCatalogFaculties(profile.universitySlug);
+      const row = faculties.find((f) => f.slug === profile.facultySlug);
+      faculty = row ? `${row.shortAbbr} — ${row.name}` : faculty;
+    }
+    if (profile.facultySlug && profile.courseSlug) {
+      const { courses } = await getCatalogCourses(profile.facultySlug);
+      const row = courses.find((c) => c.slug === profile.courseSlug);
+      course = row ? `${row.shortAbbr} — ${row.name}` : course;
+    }
+  } catch {
+    // keep slugs as fallback
+  }
+
+  return { university, faculty, course };
 }

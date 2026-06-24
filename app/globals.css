@@ -126,6 +126,42 @@ ul.players li {
   color: #f87171;
 }
 
+.pill-affiliation-guest {
+  background: rgba(148, 163, 184, 0.2);
+  color: #cbd5e1;
+}
+
+.affiliation-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.member-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field-label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.checkbox-row input {
+  margin-top: 0.15rem;
+}
+
 .breadcrumb {
   margin: 0 0 1rem;
   color: var(--muted);
